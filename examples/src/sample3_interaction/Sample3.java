@@ -1,22 +1,24 @@
 package sample3_interaction;
 
 import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.event.MouseInputListener;
 
-import org.jdesktop.swingx.JXMapViewer;
-import org.jdesktop.swingx.OSMTileFactoryInfo;
-import org.jdesktop.swingx.input.CenterMapListener;
-import org.jdesktop.swingx.input.PanKeyListener;
-import org.jdesktop.swingx.input.PanMouseInputListener;
-import org.jdesktop.swingx.input.ZoomMouseWheelListenerCursor;
-import org.jdesktop.swingx.mapviewer.DefaultTileFactory;
-import org.jdesktop.swingx.mapviewer.GeoPosition;
-import org.jdesktop.swingx.mapviewer.LocalResponseCache;
-import org.jdesktop.swingx.mapviewer.TileFactoryInfo;
+import org.jxmapviewer.JXMapViewer;
+import org.jxmapviewer.OSMTileFactoryInfo;
+import org.jxmapviewer.input.CenterMapListener;
+import org.jxmapviewer.input.PanKeyListener;
+import org.jxmapviewer.input.PanMouseInputListener;
+import org.jxmapviewer.input.ZoomMouseWheelListenerCursor;
+import org.jxmapviewer.viewer.DefaultTileFactory;
+import org.jxmapviewer.viewer.GeoPosition;
+import org.jxmapviewer.viewer.LocalResponseCache;
+import org.jxmapviewer.viewer.TileFactoryInfo;
 
 /**
  * A simple sample application that shows
@@ -40,7 +42,7 @@ public class Sample3
 		LocalResponseCache.installResponseCache(info.getBaseURL(), cacheDir, false);
 
 		// Setup JXMapViewer
-		JXMapViewer mapViewer = new JXMapViewer();
+		final JXMapViewer mapViewer = new JXMapViewer();
 		mapViewer.setTileFactory(tileFactory);
 
 		GeoPosition frankfurt = new GeoPosition(50.11, 8.68);
@@ -68,12 +70,43 @@ public class Sample3
 		mapViewer.setOverlayPainter(sp);
 		
 		// Display the viewer in a JFrame
-		JFrame frame = new JFrame("JXMapviewer2 Example 3");
+		final JFrame frame = new JFrame();
 		frame.setLayout(new BorderLayout());
 		frame.add(new JLabel("Use left mouse button to pan, mouse wheel to zoom and right mouse to select"), BorderLayout.NORTH);
 		frame.add(mapViewer);
 		frame.setSize(800, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);
+		
+		mapViewer.addPropertyChangeListener("zoom", new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				updateWindowTitle(frame, mapViewer);
+			}
+		});
+		
+		mapViewer.addPropertyChangeListener("center", new PropertyChangeListener()
+		{
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				updateWindowTitle(frame, mapViewer);
+			}
+		});
+		
+		updateWindowTitle(frame, mapViewer);
 	}
+
+	protected static void updateWindowTitle(JFrame frame, JXMapViewer mapViewer)
+	{
+		double lat = mapViewer.getCenterPosition().getLatitude();
+		double lon = mapViewer.getCenterPosition().getLongitude();
+		int zoom = mapViewer.getZoom();
+		
+		frame.setTitle(String.format("JXMapviewer2 Example 3 (%.2f / %.2f) - Zoom: %d", lat, lon, zoom)); 
+	}
+	
+	
 }
